@@ -1,0 +1,40 @@
+﻿@model List<tblEvent>
+@{
+    ViewData["Title"] = "Search Mail Numbers";
+}
+<h2>@ViewData["Title"]</h2>
+
+<div class="container">
+
+    <!-- Mail number search bar -->
+    <form id="mailNumberForm" method="get" action="@Url.Action("Index", "Home")">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id="searchMailNumberInput" name="searchMailNumbers" placeholder="Search Mail Numbers">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">Search Mail Numbers</button>
+            </div>
+        </div>
+    </form>
+ 
+    @if (Model != null && Model.Any())
+    {
+        <h4>Search Result/s:</h4>
+        <div class="table-responsive">
+            <table id="dataTable" class="table table-striped table-responsive">
+                <thead>
+                    <tr>
+                        <th data-orderable="true">Mail Subject</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Subject</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
