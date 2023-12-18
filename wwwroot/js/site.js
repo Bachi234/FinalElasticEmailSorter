@@ -1,13 +1,14 @@
-﻿$(document).ready(function () {
-    var loadingData = false;
+﻿var dataTable;
+$(document).ready(function () {
     try {
         // Initialize DataTable
-        dataTable = $("#datatable-buttons").DataTable({
+        $("#datatable-buttons").DataTable({
+        
             scrollY: '100vh', // Enable vertical scrolling
             lengthChange: true,
             pageLength: 100,
             initComplete: function () {
-                // show the table after datatables is fully initialized
+                // show the table after DataTables is fully initialized
                 $('#datatableContainer0').delay(10).show();
                 $.fn.dataTable.ext.errMode = 'none'; // Disable error reporting for timeout
                 $.ajaxSetup({
@@ -51,22 +52,15 @@
                 search: "Table Filter:"
             },
             order: [
-                [
-                   5, 'asc'
-                ]
+                [5, 'asc']
             ],
             columnDefs: [{
                 targets: 0,
+                width: '100px',
                 orderable: false
             }],
-            // Callbacks to show/hide loading modal
-            "preInit": function () {
-                showLoadingModal();
-            },
-            "drawCallback": function () {
-                hideLoadingModal();
-            }
         });
+
         setTimeout(function () {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust().draw();
         }, 10);
@@ -85,9 +79,10 @@
 
             // Get the current value of the hidden input for searchMailNumber
             var searchMailNumber = document.forms["searchForm"]["searchMailNumber"].value;
+
             // If searchMailNumber is not empty, fetch and display the data
             if (searchMailNumber.trim() !== '') {
-                await loadDataAndDisplayTable(searchMailNumber);
+                await loadDataofMailNumber(searchMailNumber);
                 // Load and display DataTable after fetching data
                 loadDataTable();
             }
@@ -111,7 +106,7 @@
                         throw new Error('Network response was not ok');
                     }
 
-                    const data = await response.json();
+                    const data = await $.post(url);
                     console.log(data);
 
                     // Hide the loading modal after the data is loaded and displayed
@@ -124,23 +119,7 @@
                 loadDataTable();
             }
         });
-
-        document.getElementById('searchButton').addEventListener('click', function () {
-            handleButtonClick(loadDataAndDisplayTable_);
-        });
-
-        document.getElementById('filterButton').addEventListener('click', function () {
-            handleButtonClick(loadDataAndDisplayTable);
-        });
-
-        async function handleButtonClick(callback) {
-            if (!loadingData) {
-                loadingData = true;
-                await callback(); // Wait for the callback to complete
-                loadingData = false;
-            }
-        }
-
+        //Mail Number auto load and search
         document.getElementById('mailNumberForm').addEventListener('blur', async function (event) {
             // Prevent the default form submission behavior
             event.preventDefault();
@@ -150,7 +129,7 @@
 
             // If the mail number is not empty, fetch and display the data
             if (mailNumber.trim() !== '') {
-                await loadDataAndDisplayTable(mailNumber);
+                await loadDataofMailNumber(mailNumber);
                 // Load and display DataTable after fetching data
                 loadDataTable();
             }
@@ -162,17 +141,20 @@
 
 // Function to show the loading modal
 function showLoadingModal() {
+    console.log('Log Checker');
     var loadingModal = document.getElementById('ProgressModal');
     loadingModal.style.display = "block";
 }
 
 // Function to hide the loading modal
 function hideLoadingModal() {
+    console.log('Log checker');
     var loadingModal = document.getElementById('ProgressModal');
     loadingModal.style.display = "none";
 }
 
 function formatDate(dateString) {
+    console.log('Log Checker');
     var date = new Date(dateString);
     var month = (date.getMonth() + 1).toString().padStart(2, '0');
     var day = date.getDate().toString().padStart(2, '0');
@@ -182,7 +164,7 @@ function formatDate(dateString) {
 }
 
 // --- MAIL NUMBER ---
-async function loadDataAndDisplayTable_(searchMailNumber) {
+async function loadDataofMailNumber(searchMailNumber) { // LOAD AND DISPLAY TABLE_
     try {
         var searchSubjectInput = document.getElementById('searchSubjectInput').value;
 
@@ -202,7 +184,7 @@ async function loadDataAndDisplayTable_(searchMailNumber) {
             throw new Error('Network response was not ok');
         }
 
-        const data = await response.json();
+        const data = await $.post(url);
         console.log(data);
         // Hide the loading modal after the data is loaded and displayed
         hideLoadingModal();
@@ -217,7 +199,7 @@ async function loadDataAndDisplayTable_(searchMailNumber) {
 }
 
 // --- DATE FILTER ---
-async function loadDataAndDisplayTable() {
+async function loadDataAndDisplayDateData() { //LOAD AND DISPLAY TABLE
     try {
         showLoadingModal(); // Show the loading modal before the fetch request
 
@@ -231,8 +213,9 @@ async function loadDataAndDisplayTable() {
             throw new Error('Network response was not ok');
         }
 
-        const data = await response.json();
+        const data = await $.post(url);
         console.log(data);
+
         // Hide the loading modal after the data is loaded and displayed
         hideLoadingModal();
 
@@ -244,6 +227,7 @@ async function loadDataAndDisplayTable() {
         hideLoadingModal(); // Hide the loading modal in case of an error
     }
 }
+
 // --- CODE DUMP ---
 // --- SUBJECT FILTER ---
 //async function loadDataAndDisplayTable_() {
@@ -269,7 +253,13 @@ async function loadDataAndDisplayTable() {
 //        hideLoadingModal();
 //    }
 //}
-
+ // Callbacks to show/hide loading modal
+            //"preInit": function () {
+            //    showLoadingModal();
+            //},
+            //"drawCallback": function () {
+            //    hideLoadingModal();
+            //}
 //// Scroll to the bottom of the table
 //$("#goToBottomBtn").click(function () {
 //    var tableBottom = $("#datatable-buttons").offset().top + $("#datatable-buttons").height();
@@ -280,6 +270,19 @@ async function loadDataAndDisplayTable() {
 //$("#returnToTopBtn").click(function () {
 //    $("html, body").animate({ scrollTop: 0 }, 500);
 //});
+//async function handleButtonClick(callback) {
+//    if (!loadingData) {
+//        loadingData = true;
+
+//        // Reset DataTable before loading new data
+//        if (dataTable) {
+//            dataTable.clear().destroy();
+//        }
+
+//        await callback(); // Wait for the callback to complete
+//        loadingData = false;
+//    }
+//}
 /*scrollX: true, */   // Enable horizontal scrolling
 /* fixedHeader: true,*/ // Fix the table header
 

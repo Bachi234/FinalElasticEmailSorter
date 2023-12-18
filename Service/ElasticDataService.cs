@@ -68,50 +68,64 @@ namespace automationTest.Service
 
         private List<CombinedModel> CombineData(List<tblElasticData> elasticData, List<tblEvent> eventDataFromOtherDb)
         {
-            var combinedDataList = new List<CombinedModel>();
+            var combinedDataDictionary = new Dictionary<string, CombinedModel>();
 
             foreach (var elasticItem in elasticData)
             {
-                // Assuming Mail_Number is not present in tblElasticData, integrate it from tblEvent
-                var combinedItem = new CombinedModel
-                {
-                    Mail_Number = GetMailNumberFromEvent(elasticItem, eventDataFromOtherDb),
-                    To = elasticItem.To,
-                    From = elasticItem.From,
-                    Subject = elasticItem.Subject,
-                    Quantity = elasticItem.Quantity,
-                    EventType = elasticItem.EventType,
-                    EventDate = elasticItem.EventDate,
-                    Channel = elasticItem.Channel,
-                    MessageCategory = elasticItem.MessageCategory
-                };
+                var mailNumbers = GetMailNumbersFromEvent(elasticItem, eventDataFromOtherDb);
 
-                combinedDataList.Add(combinedItem);
+                var key = GenerateKey(elasticItem, mailNumbers);
+
+                if (combinedDataDictionary.TryGetValue(key, out var existingCombinedItem))
+                {
+                    // If the key already exists, update the Quantity
+                    existingCombinedItem.Quantity += elasticItem.Quantity;
+                }
+                else
+                {
+                    // If the key doesn't exist, create a new CombinedModel
+                    var combinedItem = new CombinedModel
+                    {
+                        Mail_Number = mailNumbers.Count > 0 ? mailNumbers[0] : "N/A",
+                        To = elasticItem.To,
+                        From = elasticItem.From,
+                        Subject = elasticItem.Subject,
+                        Quantity = elasticItem.Quantity,
+                        EventType = elasticItem.EventType,
+                        EventDate = elasticItem.EventDate,
+                        Channel = elasticItem.Channel,
+                        MessageCategory = elasticItem.MessageCategory
+                    };
+
+                    combinedDataDictionary[key] = combinedItem;
+                }
             }
 
-            //foreach (var eventItem in eventDataFromOtherDb)
-            //{
-            //    // Include Mail_Number directly from tblEvent
-            //    var combinedItem = new CombinedModel
-            //    {
-            //        Mail_Number = eventItem.Mail_Number,
-            //        Subject = eventItem.Subject
-            //    };
-
-            //    combinedDataList.Add(combinedItem);
-            //}
+            // Convert the values of the dictionary to a list
+            var combinedDataList = combinedDataDictionary.Values.ToList();
 
             return combinedDataList;
         }
 
-        private string GetMailNumberFromEvent(tblElasticData elasticItem, List<tblEvent> eventDataFromOtherDb)
+        private string GenerateKey(tblElasticData elasticItem, List<string> mailNumbers)
+        {
+            // Include all properties in the key for similarity check
+            var key = $"{string.Join("-", mailNumbers)}-{elasticItem.To}-{elasticItem.From}-{elasticItem.Subject}-{elasticItem.EventType}-{elasticItem.EventDate}-{elasticItem.Channel}-{elasticItem.MessageCategory}";
+
+            return key;
+        }
+
+        private List<string> GetMailNumbersFromEvent(tblElasticData elasticItem, List<tblEvent> eventDataFromOtherDb)
         {
             // Implement the logic to find and return Mail_Number from tblEvent based on some condition.
-            // For example, you might want to find a match based on a common identifier or property.
-            var matchingEvent = eventDataFromOtherDb.FirstOrDefault(e => e.Subject == elasticItem.Subject);
+            // For example, you might want to find matches based on a common identifier or property.
+            var matchingEvents = eventDataFromOtherDb
+                .Where(e => e.Subject == elasticItem.Subject)
+                .Select(e => e.Mail_Number)
+                .ToList();
 
-            // Return Mail_Number if found, otherwise, return a default value or handle it based on your requirements.
-            return matchingEvent?.Mail_Number ?? "N/A";
+            // Return a list of Mail_Numbers. The list might be empty if no matches are found.
+            return matchingEvents;
         }
 
         private IQueryable<tblElasticData> ProjectElasticDataProperties(IQueryable<tblElasticData> dataQuery)

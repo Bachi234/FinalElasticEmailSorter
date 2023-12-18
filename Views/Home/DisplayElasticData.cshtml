@@ -37,7 +37,7 @@
         <div class="input-group mb-3">
             <input type="text" class="form-control" name="searchSubject" id="searchSubjectInput" placeholder="-- THE INPUT FROM MAIL NUMBER TEXT FIELD WILL BE PLACED HERE --" value="@Model.EventData.FirstOrDefault()?.Subject" readonly>
             <div class="input-group-append">
-                <button id="searchButton" type="submit" onclick="loadDataAndDisplayTable_" class="btn btn-primary" name="searchButton">Generate Elastic Table</button>
+                <button id="searchButton" type="submit" onclick="loadDataofMailNumber()" class="btn btn-primary" name="searchButton">Generate Elastic Table</button>
             </div>
         </div>
     </form>
@@ -54,13 +54,13 @@
                 <input id="endDateInput" class="form-control" type="date" name="endDate" value="@ViewBag.EndDate">
             </div>
             <div class="col-md-2">
-                <button id="filterButton" type="submit" class="btn btn-primary" onclick="loadDataAndDisplayTable()">Filter Dates</button>
+                <button id="filterButton" type="submit" class="btn btn-primary" onclick="loadDataAndDisplayDateData()">Filter Dates</button>
             </div>
         </div>
     </form>
 
     <!--DATA TABLE LOOP CODE-->
-    @if (Model != null && Model.CombinedModel != null)
+    @if (Model.CombinedModel.Any())
     {
         <h4 class="card-title">Datatable</h4>
         <div style="display: none;" id="datatableContainer0" class="card">
